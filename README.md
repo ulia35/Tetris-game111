@@ -1,2 +1,2 @@
-# Tetris-game111
+# Cliker-game111
 Игра тетрис
