@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Эволюция Кликера</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            text-align: center;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.8s;
+        }
+        
+        .game {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px 50px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 90%;
+            transition: all 0.5s;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            transition: color 0.5s;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .item-container {
+            position: relative;
+            display: inline-block;
+            margin: 20px 0;
+        }
+        
+        #item {
+            font-size: 120px;
+            cursor: pointer;
+            transition: transform 0.15s, filter 0.3s;
+            user-select: none;
+            display: inline-block;
+            line-height: 1;
+        }
+        
+        #item:hover {
+            transform: scale(1.08);
+        }
+        
+        #item:active {
+            transform: scale(0.85) rotate(5deg);
+        }
+        
+        /* Анимация частиц при клике */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            font-size: 30px;
+            animation: particleFly 0.8s ease-out forwards;
+            z-index: 999;
+        }
+        
+        @keyframes particleFly {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(0.3) rotate(360deg);
+            }
+        }
+        
+        .stats {
+            font-size: 20px;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 15px;
+        }
+        
+        .stats span {
+            font-weight: bold;
+            font-size: 28px;
+        }
+        
+        #score {
+            color: #764ba2;
+            transition: color 0.5s;
+        }
+        
+        #level {
+            color: #e67e22;
+        }
+        
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        button {
+            padding: 14px 25px;
+            font-size: 18px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(118, 75, 162, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0px);
+        }
+        
+        .btn-reset {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .btn-reset:hover {
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+        }
+        
+        .evolution-bar {
+            margin-top: 15px;
+            padding: 8px;
+            background: #ecf0f1;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        .evolution-progress {
+            height: 8px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 20px;
+            transition: width 0.5s, background 0.5s;
+            width: 0%;
+        }
+        
+        .evo-label {
+            font-size: 13px;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        /* Динамические фоны */
+        .bg-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .bg-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .bg-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .bg-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .bg-5 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .bg-6 { background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); }
+        .bg-7 { background: linear-gradient(135deg, #fccb90 0%, #d57eeb 100%); }
+        .bg-8 { background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%); }
+    </style>
+</head>
+<body id="bodyBg" class="bg-1">
+    <div class="game" id="gameCard">
+        <h1 id="title">🍪 Кликер-Эволюция</h1>
+        <p class="subtitle" id="subtitle">Кликай, чтобы развиваться!</p>
+        
+        <div class="item-container">
+            <div id="item">🍪</div>
+        </div>
+        
+        <div class="stats">
+            <div>💰 Очки: <span id="score">0</span></div>
+            <div>⭐ Уровень: <span id="level">1</span></div>
+            <div>📦 Следующий предмет через: <span id="nextLevel">4</span> уровней</div>
+        </div>
+        
+        <div class="evolution-bar">
+            <div class="evolution-progress" id="progress" style="width: 0%"></div>
+        </div>
+        <div class="evo-label" id="evoLabel">До следующей эволюции: 0%</div>
+        
+        <div class="buttons">
+            <button onclick="buyUpgrade()">⬆ Улучшить (+1 за клик) - <span id="upgradeCost">10</span> очков</button>
+            <button class="btn-reset" onclick="resetGame()">🔄 Сбросить эволюцию</button>
+        </div>
+    </div>
+
+    <script>
+        // === КОНФИГ ЭВОЛЮЦИИ ===
+        const EVOLUTIONS = [
+            { emoji: '🍪', name: 'Печенька', bg: 'bg-1', color: '#764ba2' },
+            { emoji: '🍩', name: 'Пончик', bg: 'bg-2', color: '#f5576c' },
+            { emoji: '🍰', name: 'Тортик', bg: 'bg-3', color: '#4facfe' },
+            { emoji: '🍕', name: 'Пицца', bg: 'bg-4', color: '#43e97b' },
+            { emoji: '🌮', name: 'Тако', bg: 'bg-5', color: '#fa709a' },
+            { emoji: '🍣', name: 'Суши', bg: 'bg-6', color: '#a18cd1' },
+            { emoji: '🥩', name: 'Стейк', bg: 'bg-7', color: '#d57eeb' },
+            { emoji: '🌌', name: 'Галактика', bg: 'bg-8', color: '#66a6ff' },
+            { emoji: '🚀', name: 'Ракета', bg: 'bg-1', color: '#764ba2' },
+            { emoji: '💎', name: 'Алмаз', bg: 'bg-2', color: '#f5576c' },
+            { emoji: '👑', name: 'Корона', bg: 'bg-3', color: '#4facfe' },
+            { emoji: '🌟', name: 'Звезда', bg: 'bg-4', color: '#43e97b' },
+            { emoji: '⚡', name: 'Молния', bg: 'bg-5', color: '#fa709a' },
+            { emoji: '🔥', name: 'Огонь', bg: 'bg-6', color: '#a18cd1' },
+            { emoji: '🌈', name: 'Радуга', bg: 'bg-7', color: '#d57eeb' },
+        ];
+
+        // === СОСТОЯНИЕ ===
+        let score = 0;
+        let level = 1;
+        let upgradeCost = 10;
+        let currentEvoIndex = 0;
+        let clickPower = 1;
+
+        // === DOM элементы ===
+        const itemEl = document.getElementById('item');
+        const scoreEl = document.getElementById('score');
+        const levelEl = document.getElementById('level');
+        const nextLevelEl = document.getElementById('nextLevel');
+        const costEl = document.getElementById('upgradeCost');
+        const titleEl = document.getElementById('title');
+        const subtitleEl = document.getElementById('subtitle');
+        const bodyEl = document.getElementById('bodyBg');
+        const cardEl = document.getElementById('gameCard');
+        const progressEl = document.getElementById('progress');
+        const evoLabelEl = document.getElementById('evoLabel');
+
+        // === ФУНКЦИИ ЭВОЛЮЦИИ ===
+        function getEvolutionByLevel(lvl) {
+            // Каждые 5 уровней - новый предмет
+            const index = Math.min(Math.floor((lvl - 1) / 5), EVOLUTIONS.length - 1);
+            return EVOLUTIONS[index];
+        }
+
+        function getLevelInEvolution(lvl) {
+            // Сколько уровней пройдено в текущей эволюции (0-4)
+            return (lvl - 1) % 5;
+        }
+
+        function getNextEvolutionLevel(lvl) {
+            // До какого уровня нужно дойти для следующей эволюции
+            return Math.ceil(lvl / 5) * 5 + 1;
+        }
+
+        function updateUI() {
+            const evo = getEvolutionByLevel(level);
+            const levelInEvo = getLevelInEvolution(level);
+            const nextEvoLevel = getNextEvolutionLevel(level);
+            const progress = (levelInEvo / 5) * 100;
+
+            // Обновляем предмет
+            itemEl.textContent = evo.emoji;
+            
+            // Обновляем фон
+            bodyEl.className = evo.bg;
+            
+            // Обновляем цвета
+            document.querySelectorAll('.stats span, #score').forEach(el => {
+                el.style.color = evo.color;
+            });
+            
+            // Заголовок
+            titleEl.textContent = `${evo.emoji} ${evo.name} Кликер`;
+            titleEl.style.color = evo.color;
+            
+            // Подзаголовок с уровнем эволюции
+            const evoNumber = Math.floor((level - 1) / 5) + 1;
+            subtitleEl.textContent = `Эволюция #${evoNumber} • Уровень ${levelInEvo + 1}/5`;
+            
+            // Прогресс-бар
+            progressEl.style.width = `${progress}%`;
+            progressEl.style.background = `linear-gradient(90deg, ${evo.color}, ${adjustBrightness(evo.color, 30)})`;
+            evoLabelEl.textContent = `До следующей эволюции: ${Math.round(progress)}%`;
+            
+            // Информация о следующем предмете
+            const nextEvo = getEvolutionByLevel(nextEvoLevel);
+            if (nextEvoLevel <= EVOLUTIONS.length * 5) {
+                nextLevelEl.textContent = `${nextEvoLevel - level} (будет ${nextEvo.emoji})`;
+            } else {
+                nextLevelEl.textContent = '👑 Максимум!';
+            }
+            
+            // Обновляем стоимость апгрейда
+            costEl.textContent = upgradeCost;
+            
+            // Цифры
+            scoreEl.textContent = score;
+            levelEl.textContent = level;
+        }
+
+        // Вспомогательная функция для осветления цвета
+        function adjustBrightness(hex, percent) {
+            // Простой вариант - возвращаем тот же цвет, но можно доработать
+            return hex;
+        }
+
+        // === ГЕЙМПЛЕЙ ===
+        function clickItem(e) {
+            // Начисляем очки
+            score += clickPower;
+            updateUI();
+
+            // Создаем частицы
+            createParticles(e);
+        }
+
+        function createParticles(e) {
+            const emoji = getEvolutionByLevel(level).emoji;
+            const rect = itemEl.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            
+            const count = 5 + Math.floor(level / 2);
+            const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6fb7'];
+            
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.textContent = ['✨', '⭐', '💫', '🌟', emoji][Math.floor(Math.random() * 5)];
+                particle.style.left = cx + 'px';
+                particle.style.top = cy + 'px';
+                particle.style.color = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.fontSize = (20 + Math.random() * 30) + 'px';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 80 + Math.random() * 120;
+                particle.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+                particle.style.setProperty('--ty', Math.sin(angle) * dist - 50 + 'px');
+                
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 800);
+            }
+        }
+
+        function buyUpgrade() {
+            if (score >= upgradeCost) {
+                score -= upgradeCost;
+                clickPower++;
+                
+                // Сложная формула стоимости
+                upgradeCost = Math.floor(upgradeCost * 1.5) + 5;
+                
+                // Автоматически повышаем уровень каждые 5 апгрейдов
+                level++;
+                
+                updateUI();
+                showMessage('⬆ Улучшено! +1 к силе клика');
+            } else {
+                showMessage('❌ Не хватает очков!', true);
+            }
+        }
+
+        function resetGame() {
+            if (confirm('Сбросить всю эволюцию?')) {
+                score = 0;
+                level = 1;
+                clickPower = 1;
+                upgradeCost = 10;
+                updateUI();
+                showMessage('🔄 Игра сброшена!');
+            }
+        }
+
+        // === ВСПЛЫВАЮЩИЕ СООБЩЕНИЯ ===
+        let messageTimeout;
+
+        function showMessage(text, isError = false) {
+            const existing = document.querySelector('.floating-msg');
+            if (existing) existing.remove();
+            
+            const msg = document.createElement('div');
+            msg.className = 'floating-msg';
+            msg.textContent = text;
+            msg.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${isError ? 'rgba(231, 76, 60, 0.95)' : 'rgba(46, 204, 113, 0.95)'};
+                color: white;
+                padding: 12px 30px;
+                border-radius: 12px;
+                font-size: 18px;
+                font-weight: bold;
+                z-index: 9999;
+                box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+                animation: slideDown 0.5s ease-out;
+                transition: opacity 0.5s;
+            `;
+            
+            document.body.appendChild(msg);
+            
+            clearTimeout(messageTimeout);
+            messageTimeout = setTimeout(() => {
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 500);
+            }, 2000);
+        }
+
+        // Добавляем анимацию для сообщений
+        const styleSheet = document.createElement("style");
+        styleSheet.textContent = `
+            @keyframes slideDown {
+                0% { opacity: 0; transform: translateX(-50%) translateY(-30px); }
+                100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+        // === ОБРАБОТЧИК КЛИКА ===
+        itemEl.addEventListener('click', clickItem);
+
+        // === ИНИЦИАЛИЗАЦИЯ ===
+        updateUI();
+    </script>
+</body>
+</html>
